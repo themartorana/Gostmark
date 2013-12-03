@@ -180,7 +180,8 @@ func (p *PMMail) MessageAsJSONPacket() ([]byte, error) {
 // Postmark's servers and sending the
 // formatted JSON packet
 func (p *PMMail) Send() (bool, error) {
-    if _, err := p.MessageAsJSONPacket(); err != nil {
+    _, err := p.MessageAsJSONPacket()
+    if err != nil {
         return false, err
     }
 
