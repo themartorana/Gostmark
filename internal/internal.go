@@ -47,6 +47,8 @@ func GetRawResponseFromPostmark(url string, headers map[string]string, body inte
 	switch resp.StatusCode {
 	case 200:
 		return respBody, nil
+	case 401:
+		return "", errors.New("Missing or incorrect API token in header")
 	case 422:
 		var errInfo errorInfo
 		err = resp.Body.FromJsonTo(&errInfo)
@@ -60,6 +62,10 @@ func GetRawResponseFromPostmark(url string, headers map[string]string, body inte
 			)
 		}
 		return "", err
+	case 500:
+		return "", errors.New("Internal Server Error")
+	case 503:
+		return "", errors.New("Postmark Servers Temporarilty Unavailable")
 	default:
 		return "", errors.New(
 			fmt.Sprintf(
