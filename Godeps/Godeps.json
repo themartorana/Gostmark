@@ -1,0 +1,13 @@
+{
+	"ImportPath": "github.com/themartorana/Gostmark",
+	"GoVersion": "go1.5",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/franela/goreq",
+			"Rev": "3ddeded65be21dacb5a2e2d0b95af9ff6862a2b5"
+		}
+	]
+}
