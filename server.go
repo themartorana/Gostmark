@@ -1,4 +1,4 @@
-package postmark
+package gostmark
 
 import (
 	"encoding/json"
@@ -73,6 +73,7 @@ func (s Server) saveEdit() (string, error) {
 		return "", err
 	}
 	return internal.GetRawResponseFromPostmark(
+		s.client.Host,
 		fmt.Sprintf(
 			"/servers/%s",
 			s.ID,
@@ -90,6 +91,7 @@ func (s Server) saveNew() (string, error) {
 		return "", err
 	}
 	return internal.GetRawResponseFromPostmark(
+		s.client.Host,
 		"/servers",
 		map[string]string{
 			"X-Postmark-Account-Token": s.client.AccountToken,

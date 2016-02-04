@@ -13,7 +13,7 @@ type errorInfo struct {
 	Message   string
 }
 
-func GetRawResponseFromPostmark(url string, headers map[string]string, body interface{}) (string, error) {
+func GetRawResponseFromPostmark(host string, url string, headers map[string]string, body interface{}) (string, error) {
 	req := goreq.Request{
 		Uri:         url,
 		Accept:      "application/json",

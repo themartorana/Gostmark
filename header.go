@@ -1,13 +1,9 @@
-package postmark
+package gostmark
 
+// Header represents a header
+// that should be applied to the
+// outgoing email
 type Header struct {
-	Name  string `json:"Name"`
-	Value string `json:"Value"`
-}
-
-func NewHeader(name, value string) Header {
-	return Header{
-		Name:  name,
-		Value: value,
-	}
+	Name  string
+	Value string
 }
