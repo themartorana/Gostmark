@@ -48,11 +48,22 @@ func (c Client) NewServer() Server {
 	}
 }
 
+// HostOrDefault is mostly for internal use
+// in case a users uses the struct directly instead
+// of using a convenience function for initialization
+func (c Client) HostOrDefault() string {
+	if c.Host != "" {
+		return c.Host
+	}
+
+	return defaultHost
+}
+
 // GetServerForToken retreives a server struct for
 // the server token supplied
 func (c Client) GetServerByToken(serverToken string) (Server, error) {
 	body, err := internal.GetRawResponseFromPostmark(
-		c.Host,
+		c.HostOrDefault(),
 		"/server",
 		map[string]string{
 			"X-Postmark-Server-Token": serverToken,
@@ -75,7 +86,7 @@ func (c Client) GetServerByToken(serverToken string) (Server, error) {
 // the server token supplied
 func (c Client) GetServerByID(serverID string) (Server, error) {
 	body, err := internal.GetRawResponseFromPostmark(
-		c.Host,
+		c.HostOrDefault(),
 		fmt.Sprintf(
 			"/servers/%s",
 			serverID,
@@ -97,10 +108,22 @@ func (c Client) GetServerByID(serverID string) (Server, error) {
 	return s, err
 }
 
-func (c Client) GetAllServers() ([]Server, error) {
+func (c Client) getServersRecursively(offset, count int, namefilter string) ([]Server, error) {
+	url := fmt.Sprintf(
+		"/servers?count=%d&offset=%d",
+		count,
+		offset,
+	)
+	if namefilter != "" {
+		url = fmt.Sprintf(
+			"%s&name=%s",
+			url,
+			namefilter,
+		)
+	}
 	body, err := internal.GetRawResponseFromPostmark(
-		c.Host,
-		"/servers?",
+		c.HostOrDefault(),
+		url,
 		map[string]string{
 			"X-Postmark-Account-Token": c.AccountToken,
 		},
@@ -117,13 +140,30 @@ func (c Client) GetAllServers() ([]Server, error) {
 	}
 
 	// Associate the account token
-	returnServers := make([]Server, 0, len(serversResponse.Servers))
+	returnServers := make([]Server, 0, serversResponse.TotalCount)
 	for _, server := range serversResponse.Servers {
 		server.client = c
 		returnServers = append(returnServers, server)
 	}
 
+	if serversResponse.TotalCount > offset+count {
+		moreServers, err := c.getServersRecursively(
+			offset+count,
+			count,
+			namefilter,
+		)
+		if err != nil {
+			return []Server{}, err
+		}
+
+		returnServers = append(returnServers, moreServers...)
+	}
+
 	return returnServers, nil
+}
+
+func (c Client) GetAllServers(namefilter string) ([]Server, error) {
+	return c.getServersRecursively(0, 25, namefilter)
 }
 
 // SendMessage sends a single message through Postmark
@@ -151,7 +191,7 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 
 	// Post and get the response
 	body, err := internal.GetRawResponseFromPostmark(
-		c.Host,
+		c.HostOrDefault(),
 		"/email",
 		map[string]string{
 			"X-Postmark-Server-Token": c.ServerToken,
@@ -169,36 +209,39 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 }
 
 // SendMessages batch-sends Messages
-func (c Client) SendMessages(messages []Message) (BatchMessageSendResponse, error) {
+func (c Client) SendMessages(messages []Message) ([]MessageSendResponse, error) {
 	if len(messages) > 500 {
-		return BatchMessageSendResponse{}, errors.New("Cannot send over 500 messages in a single batch")
+		return []MessageSendResponse{}, errors.New("Cannot send over 500 messages in a single batch")
+	}
+	if c.ServerToken == "" {
+		return []MessageSendResponse{}, errors.New("ServerToken must be set in Client")
 	}
 
 	// Get the internal JSON. The
 	// array should marshal properly
 	bytes, err := json.Marshal(messages)
 	if err != nil {
-		return BatchMessageSendResponse{}, err
+		return []MessageSendResponse{}, err
 	}
 
 	// Post and get the response
 	body, err := internal.GetRawResponseFromPostmark(
-		c.Host,
+		c.HostOrDefault(),
 		"/email/batch",
 		map[string]string{
-			"X-Postmark-Account-Token": c.AccountToken,
+			"X-Postmark-Server-Token": c.ServerToken,
 		},
 		string(bytes),
 	)
 	if err != nil {
-		return BatchMessageSendResponse{}, err
+		return []MessageSendResponse{}, err
 	}
 
 	// Unmarshal the response
-	var responses BatchMessageSendResponse
+	var responses []MessageSendResponse
 	err = json.Unmarshal([]byte(body), &responses)
 	if err != nil {
-		return BatchMessageSendResponse{}, err
+		return []MessageSendResponse{}, err
 	}
 
 	return responses, nil

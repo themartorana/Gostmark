@@ -5,7 +5,10 @@ import (
 
 	"fmt"
 
+	"encoding/json"
+
 	"github.com/franela/goreq"
+	"github.com/tonnerre/golang-pretty"
 )
 
 type errorInfo struct {
@@ -15,7 +18,11 @@ type errorInfo struct {
 
 func GetRawResponseFromPostmark(host string, url string, headers map[string]string, body interface{}) (string, error) {
 	req := goreq.Request{
-		Uri:         url,
+		Uri: fmt.Sprintf(
+			"%s%s",
+			host,
+			url,
+		),
 		Accept:      "application/json",
 		ContentType: "application/json",
 	}
@@ -27,6 +34,7 @@ func GetRawResponseFromPostmark(host string, url string, headers map[string]stri
 
 	// Body?
 	if body != nil {
+		pretty.Println(body)
 		req.Body = body
 		req.Method = "POST"
 	}
@@ -51,7 +59,7 @@ func GetRawResponseFromPostmark(host string, url string, headers map[string]stri
 		return "", errors.New("Missing or incorrect API token in header")
 	case 422:
 		var errInfo errorInfo
-		err = resp.Body.FromJsonTo(&errInfo)
+		err = json.Unmarshal([]byte(respBody), &errInfo)
 		if err == nil {
 			err = errors.New(
 				fmt.Sprintf(
@@ -60,6 +68,21 @@ func GetRawResponseFromPostmark(host string, url string, headers map[string]stri
 					errInfo.Message,
 				),
 			)
+		} else {
+			var bodyString string
+			bodyString, err = resp.Body.ToString()
+			if err == nil {
+				err = errors.New(
+					fmt.Sprintf(
+						"API error %d: %s",
+						resp.StatusCode,
+						bodyString,
+					),
+				)
+				fmt.Println(err)
+			} else {
+				err = errors.New("422: Unprocessable error")
+			}
 		}
 		return "", err
 	case 500:

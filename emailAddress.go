@@ -2,6 +2,7 @@ package gostmark
 
 import (
 	"errors"
+	"fmt"
 	"net/mail"
 	"strings"
 )
@@ -21,7 +22,7 @@ func EmailAddressForEmail(email string) EmailAddress {
 	}
 }
 
-func (e *EmailAddress) String() (string, error) {
+func (e EmailAddress) String() (string, error) {
 	if e.Email == "" {
 		return "", errors.New("Email cannot be empty")
 	}
@@ -36,9 +37,14 @@ func (e *EmailAddress) String() (string, error) {
 }
 
 // MarshalJSON returns the Address as a proper email string.
-func (e *EmailAddress) MarshalJSON() ([]byte, error) {
+func (e EmailAddress) MarshalJSON() ([]byte, error) {
 	s, err := e.String()
-	return []byte(s), err
+	if err != nil {
+		return []byte(""), err
+	}
+	s = strings.Replace(s, "\"", "\\\"", -1)
+	s = fmt.Sprintf("\"%s\"", s)
+	return []byte(s), nil
 }
 
 // joinEmailAddresses is a convenience function to return a

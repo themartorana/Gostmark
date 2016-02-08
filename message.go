@@ -44,11 +44,6 @@ type MessageSendResponse struct {
 	Message   string
 }
 
-type BatchMessageSendResponse struct {
-	TotalCount int
-	Messages   []MessageSendResponse
-}
-
 func (m *Message) AddAttachment(attachment *Attachment) {
 	m.Mutex.Lock()
 	m.Attachments = append(m.Attachments, attachment)
@@ -61,7 +56,31 @@ func (m *Message) AddHeader(header Header) {
 	m.Mutex.Unlock()
 }
 
-func (m *Message) MarshalJSON() ([]byte, error) {
+func (m *Message) AddCc(name, emailAddress string) {
+	ea := EmailAddressForEmail(emailAddress)
+	ea.Name = name
+	m.AddEmailToCc(ea)
+}
+
+func (m *Message) AddBcc(name, emailAddress string) {
+	ea := EmailAddressForEmail(emailAddress)
+	ea.Name = name
+	m.AddEmailToBcc(ea)
+}
+
+func (m *Message) AddEmailToCc(email EmailAddress) {
+	m.Mutex.Lock()
+	m.Cc = append(m.Cc, email)
+	m.Mutex.Unlock()
+}
+
+func (m *Message) AddEmailToBcc(email EmailAddress) {
+	m.Mutex.Lock()
+	m.Bcc = append(m.Bcc, email)
+	m.Mutex.Unlock()
+}
+
+func (m Message) MarshalJSON() ([]byte, error) {
 	if m.To.Email == "" {
 		return []byte{}, errors.New("To EmailAddress required")
 	}
@@ -79,7 +98,7 @@ func (m *Message) MarshalJSON() ([]byte, error) {
 	}
 
 	// Render
-	packet, err := m.toSendPacket()
+	packet, err := m.packetToSend()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -87,7 +106,7 @@ func (m *Message) MarshalJSON() ([]byte, error) {
 	return json.Marshal(packet)
 }
 
-func (m *Message) toSendPacket() (map[string]interface{}, error) {
+func (m *Message) packetToSend() (map[string]interface{}, error) {
 	// Slow, but flexible
 	packet := map[string]interface{}{
 		"From": m.From,
