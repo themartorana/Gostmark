@@ -171,6 +171,9 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 	if c.ServerToken == "" {
 		return MessageSendResponse{}, errors.New("ServerToken must be set in Client")
 	}
+	if message.TrackOpens && message.HtmlBody == "" && message.TemplateId == 0 {
+		fmt.Println("WARNING: TrackOpens is a NOOP on messages without an HtmlBody set.")
+	}
 
 	// Get the internal JSON
 	bytes, err := json.Marshal(message)
@@ -180,7 +183,7 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 
 	// Check the size against the 10MB limit
 	size := len(bytes)
-	if size > 1024*10 {
+	if size > 1024*1000*10 {
 		return MessageSendResponse{}, errors.New(
 			fmt.Sprintf(
 				"Message + attachments cannot excede 10MB. Current size: %d Bytes",
@@ -190,14 +193,19 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 	}
 
 	// Post and get the response
+	url := "/email"
+	if message.TemplateId != 0 {
+		url = "/email/withTemplate"
+	}
 	body, err := internal.GetRawResponseFromPostmark(
 		c.HostOrDefault(),
-		"/email",
+		url,
 		map[string]string{
 			"X-Postmark-Server-Token": c.ServerToken,
 		},
 		string(bytes),
 	)
+
 	if err != nil {
 		return MessageSendResponse{}, err
 	}
@@ -215,6 +223,14 @@ func (c Client) SendMessages(messages []Message) ([]MessageSendResponse, error) 
 	}
 	if c.ServerToken == "" {
 		return []MessageSendResponse{}, errors.New("ServerToken must be set in Client")
+	}
+
+	// Postmark doesn not yet support sending batch
+	// emails with template attachments
+	for _, message := range messages {
+		if message.TemplateId != 0 {
+			return []MessageSendResponse{}, errors.New("Batch sending with templates not supported.")
+		}
 	}
 
 	// Get the internal JSON. The

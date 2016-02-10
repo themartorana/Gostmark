@@ -1,6 +1,7 @@
 package gostmark
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"io/ioutil"
@@ -13,7 +14,7 @@ type Attachment struct {
 	Reader      io.Reader
 	ContentID   string
 
-	contents []byte
+	contents string
 
 	sync.Mutex
 }
@@ -30,14 +31,15 @@ func NewAttachment(name, contentType string, reader io.Reader) *Attachment {
 // Contents returns the file contents. Currently
 // non-streaming, and memory-caching, so hardly
 // efficient.
-func (a *Attachment) Contents() ([]byte, error) {
+func (a *Attachment) Contents() (string, error) {
 	a.Mutex.Lock()
 	if len(a.contents) == 0 {
 		b, e := ioutil.ReadAll(a.Reader)
 		if e != nil {
-			return b, e
+			return "", e
 		} else {
-			a.contents = b
+			b64 := base64.StdEncoding.EncodeToString(b)
+			a.contents = b64
 		}
 	}
 	a.Mutex.Unlock()

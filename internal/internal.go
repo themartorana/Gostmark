@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 
 	"github.com/franela/goreq"
-	"github.com/tonnerre/golang-pretty"
 )
 
 type errorInfo struct {
@@ -34,7 +33,6 @@ func GetRawResponseFromPostmark(host string, url string, headers map[string]stri
 
 	// Body?
 	if body != nil {
-		pretty.Println(body)
 		req.Body = body
 		req.Method = "POST"
 	}
@@ -79,7 +77,6 @@ func GetRawResponseFromPostmark(host string, url string, headers map[string]stri
 						bodyString,
 					),
 				)
-				fmt.Println(err)
 			} else {
 				err = errors.New("422: Unprocessable error")
 			}

@@ -28,9 +28,9 @@ type Message struct {
 	Attachments []*Attachment
 
 	// Template stuff, to incorporate eventually
-	// TemplateId    int
-	// TemplateModel interface{}
-	// InlineCSS 	 bool
+	TemplateId    int
+	TemplateModel interface{}
+	InlineCSS     bool
 
 	sync.Mutex
 }
@@ -93,7 +93,7 @@ func (m Message) MarshalJSON() ([]byte, error) {
 	if len(m.Bcc) > 50 {
 		return []byte{}, errors.New("Bcc field cannot contain more than 50 entries")
 	}
-	if m.HtmlBody == "" && m.TextBody == "" {
+	if m.HtmlBody == "" && m.TextBody == "" && m.TemplateId == 0 {
 		return []byte{}, errors.New("HtmlBody and TextBody cannot both be blank")
 	}
 
@@ -153,6 +153,15 @@ func (m *Message) packetToSend() (map[string]interface{}, error) {
 	// Attachments marshal themselves
 	if len(m.Attachments) > 0 {
 		packet["Attachments"] = m.Attachments
+	}
+
+	// Template
+	if m.TemplateId != 0 {
+		packet["TemplateID"] = m.TemplateId
+		packet["InlineCss"] = m.InlineCSS
+		if m.TemplateModel != nil {
+			packet["TemplateModel"] = m.TemplateModel
+		}
 	}
 
 	return packet, nil
