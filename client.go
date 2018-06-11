@@ -62,7 +62,7 @@ func (c Client) HostOrDefault() string {
 // GetServerForToken retreives a server struct for
 // the server token supplied
 func (c Client) GetServerByToken(serverToken string) (Server, error) {
-	body, err := internal.GetRawResponseFromPostmark(
+	body, err := internal.RawResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		"/server",
 		map[string]string{
@@ -85,7 +85,7 @@ func (c Client) GetServerByToken(serverToken string) (Server, error) {
 // GetServerForToken retreives a server struct for
 // the server token supplied
 func (c Client) GetServerByID(serverID string) (Server, error) {
-	body, err := internal.GetRawResponseFromPostmark(
+	body, err := internal.RawResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		fmt.Sprintf(
 			"/servers/%s",
@@ -121,7 +121,7 @@ func (c Client) getServersRecursively(offset, count int, namefilter string) ([]S
 			namefilter,
 		)
 	}
-	body, err := internal.GetRawResponseFromPostmark(
+	body, err := internal.RawResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		url,
 		map[string]string{
@@ -197,7 +197,7 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 	if message.TemplateId != 0 {
 		url = "/email/withTemplate"
 	}
-	body, err := internal.GetRawResponseFromPostmark(
+	body, err := internal.RawResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		url,
 		map[string]string{
@@ -241,7 +241,7 @@ func (c Client) SendMessages(messages []Message) ([]MessageSendResponse, error) 
 	}
 
 	// Post and get the response
-	body, err := internal.GetRawResponseFromPostmark(
+	body, err := internal.RawResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		"/email/batch",
 		map[string]string{
@@ -261,4 +261,32 @@ func (c Client) SendMessages(messages []Message) ([]MessageSendResponse, error) 
 	}
 
 	return responses, nil
+}
+
+func (c Client) SearchMessages(outbound bool, packet MessageSearchPacket) (SearchResult, error) {
+	switch outbound {
+	case true:
+		return c.searchOutboudMessages(packet)
+	default:
+		return SearchResult{}, errors.New("not yet implemented")
+	}
+}
+
+func (c Client) searchOutboudMessages(packet MessageSearchPacket) (SearchResult, error) {
+	urlValues := packet.AsValues()
+	respText, err := internal.RawResponseFromPostmarkGet(
+		c.Host,
+		"/messages/outbound",
+		map[string]string{
+			"X-Postmark-Server-Token": c.ServerToken,
+		},
+		urlValues,
+	)
+	if err != nil {
+		return SearchResult{}, err
+	}
+
+	var sr SearchResult
+	err = json.Unmarshal([]byte(respText), &sr)
+	return sr, err
 }

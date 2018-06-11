@@ -72,7 +72,7 @@ func (s Server) saveEdit() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return internal.GetRawResponseFromPostmark(
+	return internal.RawResponseFromPostmarkPost(
 		s.client.Host,
 		fmt.Sprintf(
 			"/servers/%s",
@@ -90,7 +90,7 @@ func (s Server) saveNew() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return internal.GetRawResponseFromPostmark(
+	return internal.RawResponseFromPostmarkPost(
 		s.client.Host,
 		"/servers",
 		map[string]string{
