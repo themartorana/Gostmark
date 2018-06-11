@@ -219,7 +219,7 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 // SendMessages batch-sends Messages
 func (c Client) SendMessages(messages []Message) ([]MessageSendResponse, error) {
 	if len(messages) > 500 {
-		return []MessageSendResponse{}, errors.New("Cannot send over 500 messages in a single batch")
+		return []MessageSendResponse{}, errors.New("cannot send over 500 messages in a single batch")
 	}
 	if c.ServerToken == "" {
 		return []MessageSendResponse{}, errors.New("ServerToken must be set in Client")
@@ -229,7 +229,7 @@ func (c Client) SendMessages(messages []Message) ([]MessageSendResponse, error) 
 	// emails with template attachments
 	for _, message := range messages {
 		if message.TemplateId != 0 {
-			return []MessageSendResponse{}, errors.New("Batch sending with templates not supported.")
+			return []MessageSendResponse{}, errors.New("batch sending with templates not supported")
 		}
 	}
 
@@ -263,16 +263,16 @@ func (c Client) SendMessages(messages []Message) ([]MessageSendResponse, error) 
 	return responses, nil
 }
 
-func (c Client) SearchMessages(outbound bool, packet MessageSearchPacket) (SearchResult, error) {
+func (c Client) SearchMessages(outbound bool, packet MessageSearchPacket) (SearchResults, error) {
 	switch outbound {
 	case true:
 		return c.searchOutboudMessages(packet)
 	default:
-		return SearchResult{}, errors.New("not yet implemented")
+		return SearchResults{}, errors.New("not yet implemented")
 	}
 }
 
-func (c Client) searchOutboudMessages(packet MessageSearchPacket) (SearchResult, error) {
+func (c Client) searchOutboudMessages(packet MessageSearchPacket) (SearchResults, error) {
 	urlValues := packet.AsValues()
 	respText, err := internal.RawResponseFromPostmarkGet(
 		c.Host,
@@ -283,10 +283,10 @@ func (c Client) searchOutboudMessages(packet MessageSearchPacket) (SearchResult,
 		urlValues,
 	)
 	if err != nil {
-		return SearchResult{}, err
+		return SearchResults{}, err
 	}
 
-	var sr SearchResult
+	var sr SearchResults
 	err = json.Unmarshal([]byte(respText), &sr)
 	return sr, err
 }
