@@ -42,8 +42,12 @@ type SearchResult struct {
 // MessageSearchPacket returns the search packet as url.Values
 func (msp MessageSearchPacket) AsValues() url.Values {
 	vals := make(url.Values)
+	vals.Add("offset", strconv.Itoa(msp.Offset))
+
+	if msp.Count == 0 {
+		msp.Count = 500
+	}
 	vals.Add("count", strconv.Itoa(msp.Count))
-	vals.Add("offset", strconv.Itoa(msp.Count))
 
 	if str, err := msp.Recipient.String(); err == nil {
 		vals.Add("recipient", str)
