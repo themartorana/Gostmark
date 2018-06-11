@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/themartorana/Gostmark/internal"
+	"github.com/themartorana/Gostmark/raw"
 )
 
 type Client struct {
@@ -62,7 +62,7 @@ func (c Client) HostOrDefault() string {
 // GetServerForToken retreives a server struct for
 // the server token supplied
 func (c Client) GetServerByToken(serverToken string) (Server, error) {
-	body, err := internal.RawResponseFromPostmarkPost(
+	body, err := raw.ResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		"/server",
 		map[string]string{
@@ -85,7 +85,7 @@ func (c Client) GetServerByToken(serverToken string) (Server, error) {
 // GetServerForToken retreives a server struct for
 // the server token supplied
 func (c Client) GetServerByID(serverID string) (Server, error) {
-	body, err := internal.RawResponseFromPostmarkPost(
+	body, err := raw.ResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		fmt.Sprintf(
 			"/servers/%s",
@@ -121,7 +121,7 @@ func (c Client) getServersRecursively(offset, count int, namefilter string) ([]S
 			namefilter,
 		)
 	}
-	body, err := internal.RawResponseFromPostmarkPost(
+	body, err := raw.ResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		url,
 		map[string]string{
@@ -197,7 +197,7 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 	if message.TemplateId != 0 {
 		url = "/email/withTemplate"
 	}
-	body, err := internal.RawResponseFromPostmarkPost(
+	body, err := raw.ResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		url,
 		map[string]string{
@@ -241,7 +241,7 @@ func (c Client) SendMessages(messages []Message) ([]MessageSendResponse, error) 
 	}
 
 	// Post and get the response
-	body, err := internal.RawResponseFromPostmarkPost(
+	body, err := raw.ResponseFromPostmarkPost(
 		c.HostOrDefault(),
 		"/email/batch",
 		map[string]string{
@@ -274,7 +274,7 @@ func (c Client) SearchMessages(outbound bool, packet MessageSearchPacket) (Searc
 
 func (c Client) searchOutboudMessages(packet MessageSearchPacket) (SearchResults, error) {
 	urlValues := packet.AsValues()
-	respText, err := internal.RawResponseFromPostmarkGet(
+	respText, err := raw.ResponseFromPostmarkGet(
 		c.Host,
 		"/messages/outbound",
 		map[string]string{

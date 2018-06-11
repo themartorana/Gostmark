@@ -1,4 +1,4 @@
-package internal
+package raw
 
 import (
 	"errors"
@@ -16,7 +16,7 @@ type errorInfo struct {
 	Message   string
 }
 
-func RawResponseFromPostmarkPost(host string, url string, headers map[string]string, body interface{}) (string, error) {
+func ResponseFromPostmarkPost(host string, url string, headers map[string]string, body interface{}) (string, error) {
 	req := goreq.Request{
 		Method: "POST",
 		Uri: fmt.Sprintf(
@@ -99,7 +99,7 @@ func RawResponseFromPostmarkPost(host string, url string, headers map[string]str
 	}
 }
 
-func RawResponseFromPostmarkGet(host string, url string, headers map[string]string, querystring url.Values) (string, error) {
+func ResponseFromPostmarkGet(host string, url string, headers map[string]string, querystring url.Values) (string, error) {
 	req := goreq.Request{
 		Method: "GET",
 		Uri: fmt.Sprintf(

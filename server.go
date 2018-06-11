@@ -6,7 +6,7 @@ import (
 
 	"fmt"
 
-	"github.com/themartorana/Gostmark/internal"
+	"github.com/themartorana/Gostmark/raw"
 )
 
 type Server struct {
@@ -72,7 +72,7 @@ func (s Server) saveEdit() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return internal.RawResponseFromPostmarkPost(
+	return raw.ResponseFromPostmarkPost(
 		s.client.Host,
 		fmt.Sprintf(
 			"/servers/%s",
@@ -90,7 +90,7 @@ func (s Server) saveNew() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return internal.RawResponseFromPostmarkPost(
+	return raw.ResponseFromPostmarkPost(
 		s.client.Host,
 		"/servers",
 		map[string]string{
