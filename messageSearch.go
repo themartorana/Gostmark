@@ -7,7 +7,7 @@ import (
 )
 
 type MessageSearchPacket struct {
-	Recipient EmailAddress
+	Recipient string
 	FromEmail EmailAddress
 	Tag       string
 	Status    MessageStatus
@@ -49,8 +49,8 @@ func (msp MessageSearchPacket) AsValues() url.Values {
 	}
 	vals.Add("count", strconv.Itoa(msp.Count))
 
-	if str, err := msp.Recipient.String(); err == nil {
-		vals.Add("recipient", str)
+	if msp.Recipient != "" {
+		vals.Add("recipient", msp.Recipient)
 	}
 	if str, err := msp.FromEmail.String(); err == nil {
 		vals.Add("fromemail", str)
