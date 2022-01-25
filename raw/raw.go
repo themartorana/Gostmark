@@ -1,14 +1,11 @@
 package raw
 
 import (
-	"errors"
-	"net/url"
-
-	"fmt"
-
 	"encoding/json"
-
+	"errors"
+	"fmt"
 	"github.com/franela/goreq"
+	"net/url"
 )
 
 type errorInfo struct {

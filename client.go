@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/themartorana/Gostmark/raw"
+	"github.com/themartorana/Gostmark/v1/raw"
 )
 
 type Client struct {
