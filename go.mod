@@ -1,4 +1,4 @@
-module github.com/themartorana/Gostmark/v1
+module github.com/themartorana/Gostmark/v2
 
 go 1.17
 

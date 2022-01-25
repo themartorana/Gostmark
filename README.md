@@ -2,5 +2,5 @@ Go package for Postmarkapp.com
 
 Install:
 ```
-go get -u github.com/themartorana/Gostmark/v1
+go get -u github.com/themartorana/Gostmark/v2
 ```

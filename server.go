@@ -6,7 +6,7 @@ import (
 
 	"fmt"
 
-	"github.com/themartorana/Gostmark/v1/raw"
+	"github.com/themartorana/Gostmark/v2/raw"
 )
 
 type Server struct {
