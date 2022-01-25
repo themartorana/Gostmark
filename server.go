@@ -75,7 +75,7 @@ func (s Server) saveEdit() (string, error) {
 	return raw.ResponseFromPostmarkPost(
 		s.client.Host,
 		fmt.Sprintf(
-			"/servers/%s",
+			"/servers/%d",
 			s.ID,
 		),
 		map[string]string{

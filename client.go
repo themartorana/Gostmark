@@ -167,7 +167,7 @@ func (c Client) GetAllServers(namefilter string) ([]Server, error) {
 }
 
 // SendMessage sends a single message through Postmark
-func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
+func (c Client) SendMessage(message *Message) (MessageSendResponse, error) {
 	if c.ServerToken == "" {
 		return MessageSendResponse{}, errors.New("ServerToken must be set in Client")
 	}
@@ -184,12 +184,11 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 	// Check the size against the 10MB limit
 	size := len(bytes)
 	if size > 1024*1000*10 {
-		return MessageSendResponse{}, errors.New(
-			fmt.Sprintf(
-				"Message + attachments cannot excede 10MB. Current size: %d Bytes",
+		return MessageSendResponse{},
+			fmt.Errorf(
+				"message + attachments cannot excede 10MB. Current size: %d Bytes",
 				size,
-			),
-		)
+			)
 	}
 
 	// Post and get the response
@@ -217,7 +216,7 @@ func (c Client) SendMessage(message Message) (MessageSendResponse, error) {
 }
 
 // SendMessages batch-sends Messages
-func (c Client) SendMessages(messages []Message) ([]MessageSendResponse, error) {
+func (c Client) SendMessages(messages []*Message) ([]MessageSendResponse, error) {
 	if len(messages) > 500 {
 		return []MessageSendResponse{}, errors.New("cannot send over 500 messages in a single batch")
 	}

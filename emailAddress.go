@@ -24,7 +24,7 @@ func EmailAddressForEmail(email string) EmailAddress {
 
 func (e EmailAddress) String() (string, error) {
 	if e.Email == "" {
-		return "", errors.New("Email cannot be empty")
+		return "", errors.New("email cannot be empty")
 	}
 
 	// Steal already considered functionality, why not?

@@ -80,18 +80,18 @@ func (m *Message) AddEmailToBcc(email EmailAddress) {
 	m.Mutex.Unlock()
 }
 
-func (m Message) MarshalJSON() ([]byte, error) {
+func (m *Message) MarshalJSON() ([]byte, error) {
 	if m.To.Email == "" {
-		return []byte{}, errors.New("To EmailAddress required")
+		return []byte{}, errors.New("to EmailAddress required")
 	}
 	if m.From.Email == "" {
-		return []byte{}, errors.New("From EmailAddress required")
+		return []byte{}, errors.New("from EmailAddress required")
 	}
 	if len(m.Cc) > 50 {
-		return []byte{}, errors.New("Cc field cannot contain more than 50 entries")
+		return []byte{}, errors.New("cc field cannot contain more than 50 entries")
 	}
 	if len(m.Bcc) > 50 {
-		return []byte{}, errors.New("Bcc field cannot contain more than 50 entries")
+		return []byte{}, errors.New("bcc field cannot contain more than 50 entries")
 	}
 	if m.HtmlBody == "" && m.TextBody == "" && m.TemplateId == 0 {
 		return []byte{}, errors.New("HtmlBody and TextBody cannot both be blank")
